@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <style>
+    body{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    canvas{
+      border:1px solid #d3d3d3;
+      position: absolute;
+    }
+    audio{
+      position: fixed;
+      top: 0;
+    }
+    .c1{
+      filter: blur(87px);
+      display: none;
+    }
+    .c2{
+      /* display: none; */
+    }
+    .c3{
+      display: none;
+    }
+    .c4{
+      display: none;
+    }
+    .c5{
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas class="c1" width="800" height="800"></canvas>
+  <canvas class="c2" width="800" height="800"></canvas>
+  <canvas class="c3" width="800" height="800"></canvas>
+  <canvas class="c4" width="800" height="800"></canvas>
+  <canvas class="c5" width="800" height="800"></canvas>
+
+  <!-- <audio id="myAudio" controls src="Rei Yasuda - You're the one.mp3"></audio> -->
+  <audio id="myAudio" controls src="頑童MJ116 【飆高速 BIAOGAOSU】Official Music Video 4K.mp3"></audio>
+  <!-- <audio id="myAudio" controls src="頑童MJ116 【飆高速 BIAOGAOSU】Official Music Video 4K.mp3"></audio> -->
+</body>
+<script name="c1">
+
+  window.onload = function() {
+
+    // 讀取audio物件
+    var audio = document.querySelector('audio');
+
+    // 判斷瀏覽器是否支援AudioContext
+    window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
+
+    // 建立
+    var ctx = new AudioContext();
+    // 對應的音頻即可被播放或者修改
+    var audioSrc = ctx.createMediaElementSource(audio);
+    // 可以用來獲取音頻時間和頻率數據，以及實現數據可視化。
+    var analyser = ctx.createAnalyser();
+    // 它可以控制音頻的總音量
+    var gainNode = ctx.createGain();
+
+    var size = 128;
+    analyser.fftSize = size*2;
+
+    // 音頻資訊輸出至analyser
+    audioSrc.connect(analyser);
+    // 音頻資訊輸出至gainNode
+    audioSrc.connect(gainNode);
+    // 音頻資訊輸出至context中所有音頻（節點）的最終目標節點，一般是音頻渲染設備，比如揚聲器。
+    gainNode.connect(ctx.destination);
+
+    var frequencyData = new Uint8Array(size);
+
+    setInterval(function(){ 
+
+      // if(audio.paused) return;
+      analyser.getByteFrequencyData(frequencyData);
+      var tt;
+      var arr = [];
+   
+    
+
+      let ggg = Array.from(frequencyData);
+      // 消去無音部分
+      ggg.length =  ggg.length-50;
+      var a = 0;
+      // console.log('ggg.length   '+ggg.length);
+      for (let i = 0; i < ggg.length; i++) {
+
+        // console.log(a);
+        arr[i] = ggg[a];
+
+        a = a+17;
+        if(a>=ggg.length) a = a%ggg.length;
+        
+      };
+      // console.log(frequencyData);
+      // console.log(ggg);
+      draw(arr);
+
+    }, 4);
+
+
+
+
+  };
+
+
+    // 圓心
+    var circleCenter = [400, 400];
+    // 半徑
+    var radius = 120;
+
+    function draw(point) {
+      var c = document.getElementsByClassName("c2")[0];
+      var ctx = c.getContext("2d");
+      ctx.clearRect(0,0,800,800); // clear canvas
+
+      var angle = 360/point.length;
+      var eeee;
+      var dddd;
+      for (let i = 0; i < point.length; i++) {
+        var lll = i;
+    
+        dddd = point[i]*(point[i]/255)*(point[i]/255)*(point[i]/255);
+        var distance = 1+(dddd/255);
+        var x = circleCenter[0] + radius * Math.cos(-(angle*lll)*Math.PI/180) * distance;
+        var y = circleCenter[1] + radius * Math.sin(-(angle*lll)*Math.PI/180) * distance;
+        // 最後一個 回到頭
+        if(lll+1 == point.length) lll = -1;
+
+
+        eeee = point[lll+1]*(point[lll+1]/255)*(point[lll+1]/255)*(point[lll+1]/255);
+        var distance2 = 1+(eeee/255);
+        var x2 = circleCenter[0] + radius * Math.cos(-(angle*(lll+1))*Math.PI/180) * distance2;
+        var y2 = circleCenter[1] + radius * Math.sin(-(angle*(lll+1))*Math.PI/180) * distance2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = i%2 === 0 ? 'rgb(225, 73, 155)' : 'rgb(73,182,225)';
+        ctx.stroke();
+      }
+      for (let i = 0; i < point.length; i++) {
+        var lll = i;
+        dddd = point[i]*(point[i]/255)*(point[i]/255)*(point[i]/255);
+        var distance = 1-(dddd/255);
+        var x = circleCenter[0] + radius * Math.cos(-(angle*lll)*Math.PI/180) * distance;
+        var y = circleCenter[1] + radius * Math.sin(-(angle*lll)*Math.PI/180) * distance;
+        // 最後一個 回到頭
+        if(lll+1 == point.length) lll = -1;
+        eeee = point[lll+1]*(point[lll+1]/255)*(point[lll+1]/255)*(point[lll+1]/255);
+        var distance2 = 1-(eeee/255);
+        var x2 = circleCenter[0] + radius * Math.cos(-(angle*(lll+1))*Math.PI/180) * distance2;
+        var y2 = circleCenter[1] + radius * Math.sin(-(angle*(lll+1))*Math.PI/180) * distance2;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x2, y2);
+        ctx.strokeStyle = i%2 === 0 ? 'rgb(225, 73, 155)' : 'rgb(73,182,225)';
+        ctx.stroke();
+      }
+    }
+  
+
+  
+
+   
+</script>
+
+<script name="c3">
+
+</script>
+<script name="c4">
+  var c = document.getElementsByClassName("c4")[0];
+  var ctx = c.getContext("2d");
+
+</script>
+<script name="c5">
+  var c = document.getElementsByClassName("c5")[0];
+  var ctx = c.getContext("2d");
+
+</script>
+</html>

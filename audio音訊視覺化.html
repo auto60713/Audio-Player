@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <audio id="myAudio" controls src="Rei Yasuda - You're the one.mp3"></audio>
+</body>
+<script> 
+ window.onload = function() {
+
+  // 讀取audio物件
+  var audio = document.querySelector('audio');
+
+  // 判斷瀏覽器是否支援AudioContext
+  window.AudioContext = window.AudioContext || window.webkitAudioContext || window.mozAudioContext;
+
+  // 建立
+  var ctx = new AudioContext();
+  // 對應的音頻即可被播放或者修改
+  var audioSrc = ctx.createMediaElementSource(audio);
+  // 可以用來獲取音頻時間和頻率數據，以及實現數據可視化。
+  var analyser = ctx.createAnalyser();
+  // 它可以控制音頻的總音量
+  var gainNode = ctx.createGain();
+
+  var size = 256;
+  analyser.fftSize = size*2;
+
+  // 音頻資訊輸出至analyser
+  audioSrc.connect(analyser);
+  // 音頻資訊輸出至gainNode
+  audioSrc.connect(gainNode);
+  // 音頻資訊輸出至context中所有音頻（節點）的最終目標節點，一般是音頻渲染設備，比如揚聲器。
+  gainNode.connect(ctx.destination);
+ 
+  var frequencyData = new Uint8Array(size);
+
+  setInterval(function(){ 
+    
+    analyser.getByteFrequencyData(frequencyData);
+    console.log(frequencyData)
+    
+  }, 500);
+
+
+
+
+};
+ 
+</script>
+</html>
